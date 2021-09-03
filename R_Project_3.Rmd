@@ -1,0 +1,414 @@
+---
+title: "Project 3 : Supermarket sale"
+output: html_notebook
+---
+
+---
+author: "TUAN LINH DAO"
+date: "8/16/2021"
+---
+
+####
+# Project 3 : Supermarket sale
+####
+# A. Branch A :
+####
+### Load package:
+####
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(ggpubr)
+library(RColorBrewer)
+```
+
+####
+# I/ Explore data :
+####
+# 1) Import dataset :
+####
+```{r}
+data <- read.csv(file.choose(), header = T)
+data
+```
+####
+# 2) Summarize data :
+####
+## a.1) Summary table : 
+####
+```{r}
+summary(data)
+```
+####
+## a.2) Dimension of dataset :
+####
+```{r}
+dim(data)
+```
+
+####
+## b) Unique value :
+####
+### b.1) Using "unique" function :
+####
+```{r}
+# Branch :
+a <- unique(data$Branch)
+a
+# City :
+b <- unique(data$City)
+b
+# Customer type :
+c <- unique(data$Customer.type)
+c
+# Gender :
+d <- unique(data$Gender)
+d
+# Product line :
+e <- unique(data$Product.line)
+e
+# Payment :
+f <- unique(data$Payment)
+f
+```
+####
+### b.2) Using "distinct" function with %>% operator :
+####
+```{r}
+# Branch :
+a_1 <- data %>%
+  distinct(data$Branch)
+a_1
+# City :
+b_1 <- data %>%
+  distinct(data$Customer.type)
+b_1
+# Customer type :
+c_1 <- data %>%
+  distinct(data$Customer.type)
+c_1
+# Gender :
+d_1 <- data %>%
+  distinct(data$Gender)
+d_1
+# Product line :
+e_1 <- data %>%
+  distinct(data$Product.line)
+e_1
+# Payment :
+f_1 <- data %>%
+  distinct(data$Payment)
+f_1
+```
+####
+# II/ Member table and non-member with product line:
+####
+# 3) Member table and non-member table of branch A:
+####
+## Sort data for branch A uniquely :
+####
+```{r}
+m_table <- data[data$Branch == "A", ]
+m_table
+```
+####
+## a) Count the quantity for each product line based on customer type, gender :
+####
+```{r}
+m <- m_table %>%
+  count(m_table$Customer.type,m_table$Gender,m_table$Product.line)
+m
+```
+####
+## b) Table for member of branch A:
+####
+### *) Member table :
+####
+```{r}
+m1 <- m[m$`m_table$Customer.type` == "Member", ]
+m1
+# Rename all columns of member table :
+colnames(m1) <- c("Customer type","Gender","Product_line","Quantity")
+colnames(m1)
+View(m1)
+```
+####
+### *) Barplot using ggplot package:
+####
+```{r}
+m <- ggplot(m1,aes(x=Gender,y=Quantity,fill=Product_line)) +
+  geom_bar(stat='identity',position = 'dodge') +
+  labs(title = "Product line by gender (for member)",
+       y="Quantity",
+       x="Gender") +
+  geom_text(m1,mapping = aes(label=Quantity),stat = 'identity',position_dodge(width = 1)) #+
+  #theme(legend.title = element_blank()) + 
+  #theme_fivethirtyeight()
+m
+```
+####
+## c) Table for non-member of branch A:
+####
+### *) Non-member table :
+####
+```{r}
+n_table <- m[m$`m_table$Customer.type`=="Normal", ]
+n_table
+colnames(n_table) <- c("Customer type","Gender","Product_line","Quantity")
+colnames(n_table)
+View(n_table)
+```
+####
+### *) Barplot using ggplot package :
+####
+```{r}
+n <- ggplot(n_table,aes(x=Gender,y=Quantity,fill=Product_line)) +
+  geom_bar(stat='identity',position = 'dodge') +
+  labs(title = "Product line by gender (for non-member)",
+       y="Quantity",
+       x="Gender") +
+  geom_text(n_table,mapping = aes(label=Quantity),stat = 'identity',position_dodge(width = 1)) #+
+  #theme(legend.title = element_blank()) + 
+  #theme_fivethirtyeight()
+n
+```
+####
+### *) Combining 2 chart:
+####
+```{r}
+figure <- ggarrange(m, n,
+                    labels = c("Member", "Non-member(normal)"),
+                    ncol = 1, nrow = 2, hjust = 4)
+figure
+```
+####
+# III/ Member table and non-member with rating(shopping experience on scale from 1 to 10):
+####
+## *) Create a dataframe :
+####
+```{r}
+data1 <- data.frame(data$Customer.type,data$Gender,data$Rating,data$gross.income)
+data1
+```
+####
+### a) "Member" :
+####
+### *) Table :
+####
+```{r}
+m_table1 <- data1[data1$data.Customer.type == "Member", ]
+m_table1
+colnames(m_table1) <- c("Customer type","Gender","Rating","Gross_income")
+colnames(m_table1)
+```
+####
+### *) Boxplot using ggplot :
+####
+```{r}
+m_1 <- ggplot(m_table1,aes(x=Gender,y=Rating,fill=Gender)) +
+  geom_boxplot() +
+  labs(title = "Rating by gender (for member)",
+       y="Rating",
+       x="Gender") + 
+  stat_summary(fun = mean, geom = "point", shape=16, size=3, color="white") +
+  scale_fill_manual(values=c("mediumvioletred", "mediumspringgreen")) 
+m_1
+```
+####
+### b) "Member" :
+####
+### *) Table :
+####
+```{r}
+n_table1 <- data1[data1$data.Customer.type == "Normal", ]
+n_table1
+colnames(n_table1) <- c("Customer type","Gender","Rating","Gross_income")
+colnames(n_table1)
+```
+####
+### *) Boxplot using ggplot :
+####
+```{r}
+n_1 <- ggplot(n_table1,aes(x=Gender,y=Rating,fill=Gender)) +
+  geom_boxplot() +
+  labs(title = "Rating by gender (for member)",
+       y="Rating",
+       x="Gender") + 
+  stat_summary(fun = mean, geom = "point", shape=16, size=3, color="white") +
+  scale_fill_manual(values=c("mediumvioletred", "mediumspringgreen")) 
+n_1
+```
+####
+### c) Combining 4 boxplots :
+####
+```{r}
+figure1 <- ggarrange(m_1, n_1,
+                    labels = c("Member", "Non-member(normal)"),
+                    ncol = 2, nrow = 1, hjust = 4)
+figure1
+```
+####
+### Comment: Both "member" or "non-member" have quite good shopping experience (almost 50% people in both genders, both types of customer have ranked their stratification 7/10). 
+####
+# IV/ Gross income:
+####
+## a) Boxplot for "Member":
+####
+```{r}
+m_2 <- ggplot(m_table1,aes(x=Gender,y=Gross_income,fill=Gender)) +
+  geom_boxplot() +
+  labs(title = "Member",
+       y="Gross income",
+       x="Gender") + 
+  stat_summary(fun = mean, geom = "point", shape=16, size=3, color="white") +
+  theme(plot.title = element_text(size = 20, color = "midnightblue")) +
+  #stat_boxplot(geom = "errorbar", width=0.3) +
+  scale_fill_manual(values=c("violetred1", "mediumturquoise")) 
+m_2
+```
+####
+## b) Boxplot for "Non-member":
+####
+```{r}
+n_2 <- ggplot(n_table1,aes(x=Gender,y=Gross_income,fill=Gender)) +
+  geom_boxplot(outlier.colour = "blue",outlier.shape = 16) +
+  labs(title = "Non-member",
+       y="Gross income",
+       x="Gender") + 
+  stat_summary(fun = mean, geom = "point", shape=16, size=3,color="white") +
+  theme(plot.title = element_text(size = 20, color = "midnightblue")) +
+  #stat_boxplot(geom = "errorbar", width=0.3) +
+  scale_fill_manual(values=c("violetred1", "mediumturquoise")) 
+n_2
+```
+####
+## c) Combining 4 boxplots:
+####
+```{r}
+figure2 <- ggarrange(m_2,n_2,
+                     labels = c("Member", "Non-member(normal)"),
+                    ncol = 2, nrow = 1, hjust = 4)
+figure2
+```
+####
+### Comment:
+####
+### *) "Member":
+#### 50% of female and 50% male have the the same median in gross income(about 12), female's 3rd quartile value is greater than male's 3rd quartile value(almost 25 > 22). Both genders also have the same 1st quartile value(slightly more than 5).For female, the max value even reaches to 50, for male it's just 45.There are no outlier here.
+####
+### *) "Non-member":
+#### Female has greater median value than male(14 > 10),it seems like there isn't much difference in 3rd quartile value for both genders.Both genders have the same max value.Notice that there is even some outliers in this chart for "non-member", male just has one more outlier than female(almost reach to 50).
+####
+# V/Payment:
+####
+## *) Dataframe :
+####
+```{r}
+data2 <- data.frame(data$Branch,data$Customer.type,data$Gender,data$Payment)
+data2
+```
+####
+## *) Sort data for branch A uniquely:
+####
+```{r}
+p_table <- data2[data2$data.Branch=="A", ]
+p_table
+```
+####
+## *) The amount of people in each type of payment based on customer type and gender:
+####
+```{r}
+p <- p_table %>%
+  count(p_table$data.Customer.type,p_table$data.Gender,p_table$data.Payment) %>%
+  mutate(prop_payment = round((n/sum(n))*100,2))
+p
+sum(p$n)
+#View(p)
+```
+####
+## *) Payment table for "Member":
+####
+```{r}
+p_m <- p[p$`p_table$data.Customer.type`=="Member", ]
+p_m
+colnames(p_m) <- c("Customer_type","Gender","Payment","Quantity","%")
+colnames(p_m)
+```
+####
+## *) Payment table for "Non-member":
+####
+```{r}
+p_n <- p[p$`p_table$data.Customer.type`=="Normal", ]
+p_n
+colnames(p_n) <- c("Customer_type","Gender","Payment","Quantity","%")
+colnames(p_n)
+```
+####
+## *) ggplot chart:
+####
+### "Payment by Member":
+####
+```{r}
+p1 <- ggplot(p_m,aes(x=Gender,y=Quantity,fill=Payment)) +
+  geom_bar(stat='identity',position = 'dodge') +
+  labs(title = ("Payment by Member"),
+       y="Quantity",
+       x="Gender") +
+  geom_text(p_m,mapping = aes(label=Quantity),stat = 'identity',position_dodge(width = 1))
+p1
+```
+####
+### "Payment by Non-member":
+####
+```{r}
+p2 <- ggplot(p_n,aes(x=Gender,y=Quantity,fill=Payment)) +
+  geom_bar(stat='identity',position = 'dodge') +
+  labs(title = ("Payment by Non-member"),
+       y="Quantity",
+       x="Gender") +
+  geom_text(p_n,mapping = aes(label=Quantity),stat = 'identity',position_dodge(width = 1))
+p2
+```
+####
+### Combining chart:
+####
+### a) Bar chart:
+####
+```{r}
+figure3 <- ggarrange(p1,p2,
+                     labels = c("Member","Non-member"),
+                     ncol=1,nrow = 2,hjust = 4)
+figure3
+```
+
+####
+### b) Pie chart(for whole branch A):
+####
+### *) Dataframe:
+####
+```{r}
+P_table <- p_table %>%
+  count(p_table$data.Branch,p_table$data.Payment) %>%
+  mutate(Percentage = (n/sum(n))*100)
+P_table
+colnames(P_table) <- c("Branch","Payment","Quantity","Percentage")
+colnames(P_table)
+```
+####
+### *) Pie chart using ggpie from ggpubr package:
+####
+```{r}
+labs <- paste0(p_n1$Payment, " (", round(P_table$Percentage,2), "%)")
+labs
+# Female member :
+ppg_A <- ggpie(Py_nfm,"Prop_pay",label = labs,
+   lab.pos = "in", lab.font = "white",
+      fill = "Payment", 
+      color = "white",
+       palette = c("#00AFBB", "#E7B800", "#FC4E07")) +
+  ggtitle("Proportion for each type of payment in branch A") +
+  theme(plot.title = element_text(hjust = 0.5,size = 20))
+ppg_A
+```
+
